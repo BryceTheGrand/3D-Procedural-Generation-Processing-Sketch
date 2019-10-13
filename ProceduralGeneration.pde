@@ -1,24 +1,36 @@
+// To control the camera
 import peasy.*;
 
-final int RESX = 300;
-final int RESY = 300;
+/* Resolution and point thickness. 
+ This actually just controls the number of points,
+ not literal resolution */
+final int RESX = 400;
+final int RESY = 400;
+final int POINTTHICKNESS = 5;
 
+/* Change these to define when certain elements start
+ and stop. Maximum of 1, minimum of 0. To increase amount of
+ an item, decrease the value here. */
 final float SNOWCAPTHRESHOLD  = 0.7;
 final float MOUNTAINTHRESHOLD = 0.65;
 final float LANDTHRESHOLD     = 0.55;
 final float BEACHTHRESHOLD    = 0.52;
 final float SHALLOWTHRESHOLD  = 0.45;
 
+/* This is to change how much each layer affects
+ the overall appearance of the map */
 final float LAYERONEEMPHASIS   = 1;
 final float LAYERTWOEMPHASIS   = 0.3;
 final float LAYERTHREEEMPHASIS = 0.05;
 
+/* This is how random each layer is */
 final int LAYERONECHAOS   = 5;
 final int LAYERTWOCHAOS   = 15;
 final int LAYERTHREECHAOS = 50;
 
 float[][] mapToUse;
 
+/* Control the height of the tallest mountains */
 final int TABLEHEIGHT = 200;
 
 boolean autoOffset = false;
@@ -26,7 +38,9 @@ boolean autoOffset = false;
 PeasyCam camera;
 
 void setup() {
+    // Change this to change the resolution of the actual screen
     size(800, 800, P3D);
+    strokeWeight(POINTTHICKNESS);
     camera = new PeasyCam(this, width / 2, height / 1.5, 100, 400);
     camera.setMinimumDistance(10);
     camera.setMaximumDistance(2000);
@@ -34,8 +48,6 @@ void setup() {
 }
 
 void drawMap(float[][] map) {
-    noStroke();
-    strokeWeight(8);
     float[] scale = new float[] {(float)width / map.length, (float)height / map[0].length};
     for (int x = 0; x < map.length; x++) {
         for (int y = 0; y < map[x].length; y++) {
@@ -45,11 +57,17 @@ void drawMap(float[][] map) {
             // COLOURS stroke (3D) edition ;)
             findColour(noiseValue);
 
-            point(x * scale[0], y * scale[1], (noiseValue > BEACHTHRESHOLD) ? noiseValue * TABLEHEIGHT : TABLEHEIGHT * BEACHTHRESHOLD + noiseValue);
+            point(x * scale[0], y * scale[1], 
+                (noiseValue > BEACHTHRESHOLD) ?
+                noiseValue * TABLEHEIGHT :
+                TABLEHEIGHT * BEACHTHRESHOLD + noiseValue);
         }
     }
 }
 
+/* Change the RGB values in here
+ (the values in parenthesis after stroke)
+ to change the colour of each element */
 void findColour(float n) {
     if (n > SNOWCAPTHRESHOLD) {
         stroke(230, 230, 230);
@@ -66,6 +84,7 @@ void findColour(float n) {
     }
 }
 
+// Sum a list of maps
 float[][] sum(float[][][] maps) {
     float[][] total = new float[maps[0].length][];
 
@@ -92,6 +111,7 @@ float[][] sum(float[][][] maps) {
     return total;
 }
 
+// Normalize a map given a maximum value
 float[][] normalize(float[][] map, float max) {
 
     float[][] newMap = new float[map.length][];
@@ -108,6 +128,7 @@ float[][] normalize(float[][] map, float max) {
     return newMap;
 }
 
+// Generate three new maps and sum + normalize them
 float[][] getNewSeeds() {
 
     Noise mainLayer    = new Noise(RESX, RESY, LAYERONEEMPHASIS, LAYERONECHAOS);
@@ -129,7 +150,6 @@ void draw() {
 }
 
 void keyPressed() {
-
     if (key == 'r') {
         mapToUse = getNewSeeds();
     }
